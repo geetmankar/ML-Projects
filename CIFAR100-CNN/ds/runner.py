@@ -3,7 +3,7 @@ from typing import Any, Optional
 import torch
 from torch import nn
 from sklearn.metrics import accuracy_score
-from tqdm import tqdm
+from tqdm.auto import tqdm
 
 from ds.metrics import Metric
 from ds.tracking import Tracker, Stage
