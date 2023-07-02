@@ -1,0 +1,8 @@
+paths:
+  log: ./runs/
+  data: ${hydra:runtime.cwd}/./data/
+params:
+  epoch_count: 10
+  max_lr: 5e-5
+  weight_decay: 1e-4
+  batch_size: 128
