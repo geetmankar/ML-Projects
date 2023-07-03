@@ -50,6 +50,8 @@ def main(cfg: CIFAR100Config):
     # Model, Optimizer, and Learning-Rate Scheduler
     model = to_device(CIFAR100Classifier(transforms=Main_Transforms),
                       get_default_device())
+    torch.compile(model)
+    
     optimizer = torch.optim.Adam(model.parameters(), lr=cfg.params.max_lr,
                                  weight_decay=cfg.params.weight_decay)
     lr_scheduler = torch.optim.lr_scheduler.OneCycleLR(optimizer,
