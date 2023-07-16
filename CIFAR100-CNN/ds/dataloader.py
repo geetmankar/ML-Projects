@@ -1,5 +1,4 @@
 import torch
-from typing import Any
 from torch.utils.data import DataLoader, Dataset
 
 

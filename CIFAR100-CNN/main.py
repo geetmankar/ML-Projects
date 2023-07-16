@@ -24,19 +24,21 @@ cs.store(name="cifar100_config", node=CIFAR100Config)
 
 @hydra.main(config_path="conf", config_name="config", version_base=None)
 def main(cfg: CIFAR100Config):
-
     TRAIN_DATA = CIFAR100(cfg.paths.data, train=True, transform=tt.ToTensor())
-    # TEST_DATA  = CIFAR100(cfg.paths.data, train=False)
-
-    torch.manual_seed(42)
-    val_size = int(0.1 * len(TRAIN_DATA))
-    train_set, valid_set = random_split(TRAIN_DATA,
-                                        [len(TRAIN_DATA)-val_size, val_size])
+    TEST_DATA  = CIFAR100(cfg.paths.data, train=False)
     
-    train_loader = create_device_dataloader(cfg.params.batch_size, train_set,
+    torch.manual_seed(42)
+    torch.manual_seed(42)
+    val_size = int(0.1 * len(TEST_DATA))
+    VAL_DATA, FINAL_TEST_DATA = random_split(
+                                    TEST_DATA,
+                                    [len(TEST_DATA)-val_size, val_size]
+                                    )
+    
+    train_loader = create_device_dataloader(cfg.params.batch_size, TRAIN_DATA,
                                             num_workers=4, shuffle=True)
     
-    valid_loader = create_device_dataloader(cfg.params.batch_size, valid_set,
+    valid_loader = create_device_dataloader(cfg.params.batch_size, VAL_DATA,
                                             num_workers=4, shuffle=False)
     
     # Main transforma for the training data
@@ -50,8 +52,6 @@ def main(cfg: CIFAR100Config):
     # Model, Optimizer, and Learning-Rate Scheduler
     model = to_device(CIFAR100Classifier(transforms=Main_Transforms),
                       get_default_device())
-    torch.compile(model)
-    
     optimizer = torch.optim.Adam(model.parameters(), lr=cfg.params.max_lr,
                                  weight_decay=cfg.params.weight_decay)
     lr_scheduler = torch.optim.lr_scheduler.OneCycleLR(optimizer,
@@ -92,6 +92,7 @@ def main(cfg: CIFAR100Config):
 
         # Flush the tracker for live updates
         tracker.flush()
+
 
 
 
