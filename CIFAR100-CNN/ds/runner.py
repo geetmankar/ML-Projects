@@ -15,7 +15,7 @@ class Runner:
         self,
         loader: DeviceDataLoader,
         model: nn.Module,
-        optimizer: torch.optim.Optimizer = torch.optim.SGD,
+        optimizer: Optional[torch.optim.Optimizer] = None,
         lr_scheduler: Optional[torch.optim.lr_scheduler.OneCycleLR] = None,
     ) -> None:
         self.run_count = 0
@@ -36,8 +36,8 @@ class Runner:
     def avg_accuracy(self):
         return self.accuracy_metric.average
     
-    def get_lr(optimizer: torch.optim.Optimizer):
-        for param_group in optimizer.param_groups:
+    def get_lr(self):
+        for param_group in self.optimizer.param_groups:
             return param_group['lr']
 
     def run(self, desc: str, experiment: Tracker):
@@ -48,15 +48,17 @@ class Runner:
         for batch in tqdm(self.loader, desc=desc):
             loss, batch_accuracy = self._run_single(batch)
 
-            experiment.add_batch_metric("accuracy", batch_accuracy, self.run_count)
+            experiment.add_batch_metric("Accuracy", batch_accuracy, self.run_count)
 
+            if self.optimizer:
                 # Reverse-mode AutoDiff (backpropagation)
-            loss.backward()
-            self.optimizer.step()
-            self.optimizer.zero_grad()
-            experiment.add_batch_metric("lr", self.get_lr(self.optimizer),
-                                        self.run_count)
-            self.lr_scheduler.step()
+                loss.backward()
+                self.optimizer.step()
+                self.optimizer.zero_grad()
+                experiment.add_batch_metric("lr", self.get_lr(),
+                                            self.run_count)
+                if self.lr_scheduler:
+                    self.lr_scheduler.step()
         
 
     def _run_single(self, batch: Any):
@@ -66,10 +68,10 @@ class Runner:
         prediction = self.model(imgs)
         loss = self.compute_loss(prediction, labels)
 
-        if self.stage is Stage.TRAIN:
-            self.lr_metric.update(self.get_lr(self.optimizer), batch_size)
+        if self.lr_scheduler:
+            self.lr_metric.update(self.get_lr(), batch_size)
 
-        # Compute Batch Validation Metrics
+        # Compute Batch Metrics
         y_ = labels.detach().cpu().numpy()
         y_prediction = torch.argmax(prediction.detach(), axis=1).cpu().numpy()
         batch_accuracy: float = accuracy_score(y_, y_prediction)

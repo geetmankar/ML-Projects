@@ -4,7 +4,7 @@ from torch.utils.data import random_split
 import torchvision.transforms as tt
 from torch import nn
 from torchvision.models import ResNet34_Weights
-from logging import Logger
+import logging
 import hydra
 from hydra.core.config_store import ConfigStore
 
@@ -25,9 +25,8 @@ cs.store(name="cifar100_config", node=CIFAR100Config)
 @hydra.main(config_path="conf", config_name="config", version_base=None)
 def main(cfg: CIFAR100Config):
     TRAIN_DATA = CIFAR100(cfg.paths.data, train=True, transform=tt.ToTensor())
-    TEST_DATA  = CIFAR100(cfg.paths.data, train=False)
+    TEST_DATA  = CIFAR100(cfg.paths.data, train=False, transform=tt.ToTensor())
     
-    torch.manual_seed(42)
     torch.manual_seed(42)
     val_size = int(0.1 * len(TEST_DATA))
     VAL_DATA, FINAL_TEST_DATA = random_split(
@@ -38,7 +37,7 @@ def main(cfg: CIFAR100Config):
     train_loader = create_device_dataloader(cfg.params.batch_size, TRAIN_DATA,
                                             num_workers=4, shuffle=True)
     
-    valid_loader = create_device_dataloader(cfg.params.batch_size, VAL_DATA,
+    valid_loader = create_device_dataloader(2*cfg.params.batch_size, VAL_DATA,
                                             num_workers=4, shuffle=False)
     
     # Main transforma for the training data
@@ -46,7 +45,7 @@ def main(cfg: CIFAR100Config):
             tt.RandomHorizontalFlip(),
             tt.RandomAutocontrast(1),
             tt.RandomRotation(10),
-            ResNet34_Weights.IMAGENET1K_V1.transforms(),
+            ResNet34_Weights.IMAGENET1K_V1.transforms(antialias=True),
             )
 
     # Model, Optimizer, and Learning-Rate Scheduler
@@ -61,7 +60,9 @@ def main(cfg: CIFAR100Config):
     
 
     # Create the runners
-    train_runner = Runner(train_loader, model, optimizer, lr_scheduler)
+    train_runner = Runner(train_loader, model,
+                            optimizer=optimizer,
+                            lr_scheduler=lr_scheduler)
     valid_runner = Runner(valid_loader, model)
 
     # Setup the Experiment Tracker
@@ -70,6 +71,7 @@ def main(cfg: CIFAR100Config):
 
     # Run the epochs
     for epoch_id in range(cfg.params.epoch_count):
+        print(f"Epoch: {epoch_id}")
         run_epoch(train_runner, valid_runner, tracker, epoch_id)
 
         # Average epoch metrics
@@ -82,7 +84,7 @@ def main(cfg: CIFAR100Config):
             ]
         )
 
-        Logger.info("\n" + summary + "\n")
+        logging.info("\n" + summary + "\n")
 
 
         # Reset the runners
@@ -92,6 +94,12 @@ def main(cfg: CIFAR100Config):
 
         # Flush the tracker for live updates
         tracker.flush()
+    
+    # Clear the GPU Memory Cache
+    torch.no_grad()
+    if torch.device.type == 'cuda':
+        torch.cuda.empty_cache()
+
 
 
 

@@ -63,3 +63,11 @@ class TensorboardExperiment:
         cm = ConfusionMatrixDisplay(confusion_matrix(y_true, y_pred)).plot(cmap="Blues")
         cm.ax_.set_title(f"{self.stage.name} Epoch: {step}")
         return cm.figure_
+    
+    # def add_final_confusion_matrix(
+    #     self, y_true: list[np.array], y_pred: list[np.array], step: int
+    # ):
+    #     y_true, y_pred = self.collapse_batches(y_true, y_pred)
+    #     fig = self.create_confusion_matrix(y_true, y_pred, step)
+    #     tag = f"{self.stage.name}/epoch/confusion_matrix"
+    #     self._writer.add_figure(tag, fig, step)
