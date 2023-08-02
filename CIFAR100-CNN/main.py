@@ -35,10 +35,10 @@ def main(cfg: CIFAR100Config):
                                     )
     
     train_loader = create_device_dataloader(cfg.params.batch_size, TRAIN_DATA,
-                                            num_workers=4, shuffle=True)
+                                            num_workers=2, shuffle=True)
     
     valid_loader = create_device_dataloader(2*cfg.params.batch_size, VAL_DATA,
-                                            num_workers=4, shuffle=False)
+                                            num_workers=2, shuffle=False)
     
     # Main transforma for the training data
     Main_Transforms = nn.Sequential(

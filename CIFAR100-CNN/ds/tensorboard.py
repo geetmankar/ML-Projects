@@ -60,8 +60,11 @@ class TensorboardExperiment:
     def create_confusion_matrix(
         self, y_true: list[np.array], y_pred: list[np.array], step: int
     ) -> plt.Figure:
-        cm = ConfusionMatrixDisplay(confusion_matrix(y_true, y_pred)).plot(cmap="Blues")
+        cm = ConfusionMatrixDisplay(confusion_matrix(y_true, y_pred)).plot(
+            cmap="Blues", include_values=False,
+            )
         cm.ax_.set_title(f"{self.stage.name} Epoch: {step}")
+        cm.ax_.set(xticks=np.arange(0,100,10), yticks=np.arange(0,100,10))
         return cm.figure_
     
     # def add_final_confusion_matrix(
