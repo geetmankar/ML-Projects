@@ -40,7 +40,7 @@ def main(cfg: CIFAR100Config):
     valid_loader = create_device_dataloader(2*cfg.params.batch_size, VAL_DATA,
                                             num_workers=2, shuffle=False)
     
-    # Main transforma for the training data
+    # Main transforms for the training data
     Main_Transforms = nn.Sequential(
             tt.RandomHorizontalFlip(),
             tt.RandomAutocontrast(1),
