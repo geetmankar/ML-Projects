@@ -64,6 +64,7 @@ class TensorboardExperiment:
         )).plot(cmap="Blues", include_values=False,)
         cm.ax_.set_title(f"{self.stage.name} Epoch: {step}")
         cm.ax_.set(xticks=np.arange(0, 100, 10), yticks=np.arange(0, 100, 10))
+        cm.im_.set_clim(0, 1)
         return cm.figure_
 
     def add_final_confusion_matrix(
@@ -77,6 +78,8 @@ class TensorboardExperiment:
         cm.ax_.set_title(
             f"Final Test Results\n[Accuracy: {100 * test_acc:.2f}%]")
         cm.ax_.set(xticks=np.arange(0, 100, 10), yticks=np.arange(0, 100, 10))
+        cm.im_.set_clim(0, 1)
 
+        fig = cm.figure_
         tag = "TEST/Final/confusion_matrix"
-        self._writer.add_figure(tag, cm.figure_, 0)
+        self._writer.add_figure(tag, fig, 0)
