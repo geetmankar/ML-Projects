@@ -9,7 +9,6 @@ from ds.tracking import Stage
 from ds.utils import create_experiment_log_dir
 
 
-
 class TensorboardExperiment:
     def __init__(self, log_path: str, create: bool = True):
 
@@ -60,17 +59,24 @@ class TensorboardExperiment:
     def create_confusion_matrix(
         self, y_true: list[np.array], y_pred: list[np.array], step: int
     ) -> plt.Figure:
-        cm = ConfusionMatrixDisplay(confusion_matrix(y_true, y_pred)).plot(
-            cmap="Blues", include_values=False,
-            )
+        cm = ConfusionMatrixDisplay(confusion_matrix(
+            y_true, y_pred, normalize='true'
+        )).plot(cmap="Blues", include_values=False,)
         cm.ax_.set_title(f"{self.stage.name} Epoch: {step}")
-        cm.ax_.set(xticks=np.arange(0,100,10), yticks=np.arange(0,100,10))
+        cm.ax_.set(xticks=np.arange(0, 100, 10), yticks=np.arange(0, 100, 10))
         return cm.figure_
-    
-    # def add_final_confusion_matrix(
-    #     self, y_true: list[np.array], y_pred: list[np.array], step: int
-    # ):
-    #     y_true, y_pred = self.collapse_batches(y_true, y_pred)
-    #     fig = self.create_confusion_matrix(y_true, y_pred, step)
-    #     tag = f"{self.stage.name}/epoch/confusion_matrix"
-    #     self._writer.add_figure(tag, fig, step)
+
+    def add_final_confusion_matrix(
+        self, y_true: list[np.array], y_pred: list[np.array], test_acc: float
+    ):
+        y_true, y_pred = self.collapse_batches(y_true, y_pred)
+
+        cm = ConfusionMatrixDisplay(confusion_matrix(
+            y_true, y_pred, normalize='true'
+        )).plot(cmap="Blues", include_values=False,)
+        cm.ax_.set_title(
+            f"Final Test Results\n[Accuracy: {100 * test_acc:.2f}%]")
+        cm.ax_.set(xticks=np.arange(0, 100, 10), yticks=np.arange(0, 100, 10))
+
+        tag = "TEST/Final/confusion_matrix"
+        self._writer.add_figure(tag, cm.figure_, 0)
