@@ -7,6 +7,7 @@ For example:
 - The dataloaders are created by a separate function, exhibiting a _factory pattern_ (a similar thing is done to generate directories for the logs).
 - The important metrics (Training Accuracy, Validation Accuracy, Learning Rate) for the project are handled by a `Metric` dataclass.
 - The hyperparameter configuration can be done by just editing the file `conf/config.yaml`, the contents of which are made into a dataclass and fed into the `main()` function using the `hydra-core` package (which additionally allows us to automatically structure the results of our experiments according to date and time, saving us an incredible amount of effort in tracking the changes resulting from hyperparameter tuning).
+- The code can be easily extended to use a different CNN model, even for a different image dataset. With moderate amount of modifications, it can easily be changed to train networks for non-image data and models. This is due to the Tracking and Configuration structure being generally model-agnostic.
 
 A heavy inspiration for this project is a [simpler project](https://github.com/ArjanCodes/2021-data-science-refactor/tree/main) for classifying handwritten numbers from the **MNIST** dataset. I have heavily modified the code to play properly with _CNN-ResNets_ for _CIFAR-100_. The modifications are:
 - Use of **Transfer Learning** due to a much larger Convolutional network.
