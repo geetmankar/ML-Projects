@@ -1,7 +1,5 @@
 # An easily extensible and modifiable code to classify objects in the CIFAR100 Datasets using ResNet34
 
-## FINE TUNING OF MODEL HYPERPARAMETERS IS STILL UNDERWAY
-
 Some aspects of programming design I recently learned have been applied in the project.
 For example: 
 - The dataloaders are created by a separate function, exhibiting a _factory pattern_ (a similar thing is done to generate directories for the logs).
